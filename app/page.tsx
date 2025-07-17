@@ -25,6 +25,7 @@ import TransferFlow from "@/components/transfer-flow"
 import AddMoneyModal from "@/components/add-money-modal"
 import AddCardModal from "@/components/add-card-modal"
 import CardManagement from "@/components/card-management"
+import { useRouter, useSearchParams } from "next/navigation"
 
 // Mock data
 const mockTransactions = [
@@ -100,12 +101,16 @@ const categorySpending = [
 
 export default function WalletDashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true)
-  const [activeTab, setActiveTab] = useState("dashboard")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [showTransferFlow, setShowTransferFlow] = useState(false)
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false)
   const [showAddCardModal, setShowAddCardModal] = useState(false)
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+  const activeTab = tabParam || "dashboard"
 
   // Saved cards state
   const [savedCards, setSavedCards] = useState([
@@ -190,6 +195,13 @@ export default function WalletDashboard() {
     return <TransferFlow onClose={() => setShowTransferFlow(false)} />
   }
 
+  // Helper to change tab and update URL
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(Array.from(searchParams.entries()))
+    params.set("tab", tab)
+    router.push(`?${params.toString()}`)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto p-6 max-w-7xl">
@@ -211,7 +223,7 @@ export default function WalletDashboard() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
@@ -318,7 +330,7 @@ export default function WalletDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium">Recent Transactions</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setActiveTab("transactions")}>
+                  <Button variant="ghost" size="sm" onClick={() => handleTabChange("transactions")}>
                     View All
                   </Button>
                 </div>
